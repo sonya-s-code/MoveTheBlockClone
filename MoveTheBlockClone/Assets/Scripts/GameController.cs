@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour {
 
     void Start () {
         var levelBlocks = LevelController.GenerateLevel();
+        Debug.Log(LevelController.CheckLevel(levelBlocks, LevelController.GetMask(levelBlocks)));
         foreach (var levelBlock in levelBlocks)
         {
             GameObject instantiateObj;
