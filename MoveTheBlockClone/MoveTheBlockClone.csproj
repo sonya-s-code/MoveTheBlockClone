@@ -82,7 +82,6 @@
     <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\LevelController.cs" />
     <Compile Include="Assets\Scripts\MoveBlock.cs" />
-    <Compile Include="Assets\Scripts\Point.cs" />
     <Compile Include="Assets\Scripts\PointPosition.cs" />
     <Compile Include="Assets\Scripts\UIController.cs" />
   </ItemGroup>
