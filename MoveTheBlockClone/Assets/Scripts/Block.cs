@@ -1,7 +1,7 @@
 ﻿public class Block{
     public bool IsMain;
     public bool IsVertical;
-    public BlockSize BlockSize;
+    public bool IsBig;
     public XYIndex Index;
 }
 
@@ -11,10 +11,3 @@ public class XYIndex
     public int X;
     public int Y;
 }
-
-public enum BlockSize
-{
-    Size2,
-    Size3
-}
-

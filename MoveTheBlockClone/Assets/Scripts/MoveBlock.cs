@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class MoveBlock : MonoBehaviour
 {
-    public bool isMain;
-    public bool isVertical;
+    public bool IsMain;
+    public bool IsVertical;
     XYIndex IndexPosition;
 
     [SerializeField]
@@ -28,7 +28,7 @@ public class MoveBlock : MonoBehaviour
     {
         if (needMove)
         {
-            if (!isVertical)
+            if (!IsVertical)
             {
                 float axisX;
                 axisX = Input.GetAxis("Mouse X");
