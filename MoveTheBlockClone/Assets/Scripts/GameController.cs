@@ -19,13 +19,6 @@ public class GameController : MonoBehaviour {
     private GameObject m_Win;
 
     void Start () {
-        //bloks = new List<GameObject>();
-        ////ShowLevel();
-        //List<Block> levelBlocks;
-        //levelBlocks = LevelController.GetTestLevel(4);
-        //LevelController.MainBlock = levelBlocks.FirstOrDefault(t => t.IsMain);
-        //Debug.Log(LevelController.GetLevelDecisionStep(5, 5, levelBlocks, 0, -1));
-        //ShowLevel(levelBlocks);
         Action_Win += Win;
         Action_ShowLevel += ShowLevel;
         Action_AddStep += AddStep;

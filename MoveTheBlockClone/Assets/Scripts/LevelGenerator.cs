@@ -454,6 +454,7 @@ public class LevelGenerator : MonoBehaviour
         return minDecision;
     }
 
+
     private static bool IsCheckedStep(int[,] levelMask, int step)
     {
         for (int k = StepInfo.Count - 1; k >-1 ; k--)
@@ -484,7 +485,6 @@ public class LevelGenerator : MonoBehaviour
         StepInfo.Add(new StepInfo() { LevelMask = levelMask, Step = step });
         return false;
     }
-
 
     public static int[,] GetMask(List<Block> blocks, int levelWidth, int levelHeight)
     {
