@@ -78,6 +78,7 @@ public class LevelController : MonoBehaviour {
             var moveBlock = obj.GetComponent<MoveBlock>();
             moveBlock.IsMain = levelBlock.IsMain;
             moveBlock.IsVertical = levelBlock.IsVertical;
+            moveBlock.IndexPosition = new XYIndex() { X = levelBlock.X, Y = levelBlock.Y };
 
             blocks.Add(obj);
         }

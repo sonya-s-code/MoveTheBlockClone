@@ -4,7 +4,7 @@ public class MoveBlock : MonoBehaviour
 {
     public bool IsMain;
     public bool IsVertical;
-    XYIndex IndexPosition;
+    public XYIndex IndexPosition;
 
     [SerializeField]
     private float blockMoveSpeed = 400;
@@ -19,7 +19,6 @@ public class MoveBlock : MonoBehaviour
     void Start ()
     {
         rigidbody = GetComponent<Rigidbody2D>();
-        IndexPosition = new XYIndex() { X = 0, Y = 0 };
 	}
 	
 	void FixedUpdate ()
