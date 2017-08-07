@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\Block.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
     <Compile Include="Assets\Scripts\LevelController.cs" />
+    <Compile Include="Assets\Scripts\LevelGenerator.cs" />
     <Compile Include="Assets\Scripts\MoveBlock.cs" />
     <Compile Include="Assets\Scripts\PointPosition.cs" />
     <Compile Include="Assets\Scripts\WinTrigger.cs" />

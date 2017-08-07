@@ -1,90 +1,45 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
+    [SerializeField]
+    private GameObject[] m_Levels;
+
     public static int LevelStepNumber;
     public static Action Action_AddStep;
+    public static Action Action_ShowLevel;
+    public static Action Action_Win;
 
-    [SerializeField]
-    private GameObject m_Level;
-    [SerializeField]
-    private GameObject m_Blocks;
-    [SerializeField]
-    private GameObject m_MainBlock;
-    [SerializeField]
-    private GameObject m_BlockHorisontal;
-    [SerializeField]
-    private GameObject m_BigBlockHorisontal;
-    [SerializeField]
-    private GameObject m_BlockVertical;
-    [SerializeField]
-    private GameObject m_BigBlockVertical;
-
-    [SerializeField]
-    private GameObject m_WinBorder;
     [SerializeField]
     private GameObject m_Win;
 
-    private List<GameObject> bloks;
-    private GameObject winBorder;
-
     void Start () {
-        bloks = new List<GameObject>();
-        ShowLevel();
-	}
-
-    public void ShowLevel()
-    {
-        m_Win.SetActive(false);
-        List<Block> levelBlocks;
+        //bloks = new List<GameObject>();
+        ////ShowLevel();
+        //List<Block> levelBlocks;
         //levelBlocks = LevelController.GetTestLevel(4);
         //LevelController.MainBlock = levelBlocks.FirstOrDefault(t => t.IsMain);
-        //Debug.Log(LevelController.GetLevelDecisionStep(5, 5, levelBlocks, 0));
-        levelBlocks = LevelController.GenerateLevel(5, 5, 5);
+        //Debug.Log(LevelController.GetLevelDecisionStep(5, 5, levelBlocks, 0, -1));
+        //ShowLevel(levelBlocks);
+        Action_Win += Win;
+        Action_ShowLevel += ShowLevel;
+    }
 
-        foreach (var blok in bloks)
+    private void Win()
+    {
+        m_Win.SetActive(true);
+    }
+
+    private void ShowLevel()
+    {
+        foreach (var level in m_Levels)
         {
-            Destroy(blok);
+            level.SetActive(false);
         }
-        bloks.Clear();
+    }
 
-        foreach (var levelBlock in levelBlocks)
-        {
-            GameObject instantiateObj;
-            if (levelBlock.IsMain)
-            {
-                instantiateObj = m_MainBlock;
-                Destroy(winBorder);
-                winBorder = Instantiate(m_WinBorder, new Vector3(2.59f, 2 - levelBlock.Y, -2), m_WinBorder.transform.rotation, m_Level.transform);
-                winBorder.GetComponent<WinTrigger>().WinObject = m_Win;
-            }
-            else
-            {
-                if (levelBlock.IsBig)
-                {
-                    if (levelBlock.IsVertical)
-                        instantiateObj = m_BigBlockVertical;
-                    else
-                        instantiateObj = m_BigBlockHorisontal;
-                }
-                else
-                {
-                    if (levelBlock.IsVertical)
-                        instantiateObj = m_BlockVertical;
-                    else
-                        instantiateObj = m_BlockHorisontal;
-                }
-            }
-
-            var obj = Instantiate(instantiateObj, new Vector3(levelBlock.X - 2, 2 - levelBlock.Y, -1), instantiateObj.transform.rotation, m_Blocks.transform);
-            var moveBlock = obj.GetComponent<MoveBlock>();
-            moveBlock.IsMain = levelBlock.IsMain;
-            moveBlock.IsVertical = levelBlock.IsVertical;
-
-            bloks.Add(obj);
-        }
+    private void OnDestroy()
+    {
+        Action_Win -= Win;
     }
 }
