@@ -40,9 +40,10 @@ public class GameController : MonoBehaviour {
     {
         m_Win.SetActive(false);
         List<Block> levelBlocks;
-        //levelBlocks = LevelController.GetTestLevel(3);
-        //Debug.Log(LevelController.CheckLevel(levelBlocks, LevelController.GetMask(levelBlocks), levelBlocks.FirstOrDefault(t => t.IsMain).Index.Y, 0));
-        levelBlocks = LevelController.GenerateLevel(6);
+        //levelBlocks = LevelController.GetTestLevel(4);
+        //LevelController.MainBlock = levelBlocks.FirstOrDefault(t => t.IsMain);
+        //Debug.Log(LevelController.GetLevelDecisionStep(5, 5, levelBlocks, 0));
+        levelBlocks = LevelController.GenerateLevel(5, 5, 5);
 
         foreach (var blok in bloks)
         {
@@ -57,7 +58,7 @@ public class GameController : MonoBehaviour {
             {
                 instantiateObj = m_MainBlock;
                 Destroy(winBorder);
-                winBorder = Instantiate(m_WinBorder, new Vector3(2.59f, 2 - levelBlock.Index.Y, -2), m_WinBorder.transform.rotation, m_Level.transform);
+                winBorder = Instantiate(m_WinBorder, new Vector3(2.59f, 2 - levelBlock.Y, -2), m_WinBorder.transform.rotation, m_Level.transform);
                 winBorder.GetComponent<WinTrigger>().WinObject = m_Win;
             }
             else
@@ -78,7 +79,7 @@ public class GameController : MonoBehaviour {
                 }
             }
 
-            var obj = Instantiate(instantiateObj, new Vector3(levelBlock.Index.X - 2, 2 - levelBlock.Index.Y, -1), instantiateObj.transform.rotation, m_Blocks.transform);
+            var obj = Instantiate(instantiateObj, new Vector3(levelBlock.X - 2, 2 - levelBlock.Y, -1), instantiateObj.transform.rotation, m_Blocks.transform);
             var moveBlock = obj.GetComponent<MoveBlock>();
             moveBlock.IsMain = levelBlock.IsMain;
             moveBlock.IsVertical = levelBlock.IsVertical;
