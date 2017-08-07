@@ -36,11 +36,12 @@ public class LevelController : MonoBehaviour {
 
     public void ShowLevel()
     {
-        GameController.Action_ShowLevel.Invoke();
+        int minStep = Random.Range(m_RandomStepFrom, m_RandomStepTo);
+        GameController.Action_ShowLevel.Invoke(minStep);
         gameObject.SetActive(true);
 
         List<Block> levelBlocks;
-        levelBlocks = LevelGenerator.GenerateLevel(Random.Range(m_RandomStepFrom, m_RandomStepTo), m_Width, m_Height);
+        levelBlocks = LevelGenerator.GenerateLevel(minStep, m_Width, m_Height);
 
         foreach (var block in blocks)
             Destroy(block);
