@@ -7,14 +7,14 @@ using UnityEngine;
 
 public class LevelGenerator : MonoBehaviour
 {
-    private static int f_GenerateLevelStep = 0; 
-    private static int f_GetLevelDecisionStep = 0;
+    private static int function_GenerateLevelStep_CallNumber = 0; 
+    private static int function_GetLevelDecisionStep_CallNumber = 0;
 
     private const int Infinity = 9999;
-    private static int SearchDepth;
+    private static int searchDepth;
 
-    private static List<StepInfo> StepInfo = new List<StepInfo>();
-    public static Block MainBlock;
+    private static List<StepInfo> stepInfo = new List<StepInfo>();
+    private static Block mainBlock;
     private static List<Block> availableBlockVariants;
 
     public static List<Block> GetTestLevel(int levelNumber)
@@ -259,9 +259,9 @@ public class LevelGenerator : MonoBehaviour
 
     public static List<Block> GenerateLevel(int minStep, int levelWidth, int levelHeight)
     {
-        SearchDepth = minStep;
-        f_GenerateLevelStep = 0;
-        f_GetLevelDecisionStep = 0;
+        searchDepth = minStep;
+        function_GenerateLevelStep_CallNumber = 0;
+        function_GetLevelDecisionStep_CallNumber = 0;
 
         List<Block> mainBlockVariants = new List<Block>();
         for (int i = 0; i < levelWidth - 2; i++)
@@ -280,13 +280,13 @@ public class LevelGenerator : MonoBehaviour
             }
         }
 
-        List<Block> allBlockVariants = new List<Block>();
+        availableBlockVariants = new List<Block>();
         for (int i = 0; i < levelWidth; i++)
         {
             for (int j = 0; j < levelHeight; j++)
             {
                 if (i < levelWidth - 1)
-                    allBlockVariants.Add(new Block
+                    availableBlockVariants.Add(new Block
                     {
                         X = i,
                         Y = j,
@@ -295,7 +295,7 @@ public class LevelGenerator : MonoBehaviour
                     });
 
                 if (i < levelWidth - 2)
-                    allBlockVariants.Add(new Block
+                    availableBlockVariants.Add(new Block
                     {
                         X = i,
                         Y = j,
@@ -304,7 +304,7 @@ public class LevelGenerator : MonoBehaviour
                     });
 
                 if (j < levelHeight - 1)
-                    allBlockVariants.Add(new Block
+                    availableBlockVariants.Add(new Block
                     {
                         X = i,
                         Y = j,
@@ -313,7 +313,7 @@ public class LevelGenerator : MonoBehaviour
                     });
 
                 if (j < levelHeight - 2)
-                    allBlockVariants.Add(new Block
+                    availableBlockVariants.Add(new Block
                     {
                         X = i,
                         Y = j,
@@ -323,66 +323,56 @@ public class LevelGenerator : MonoBehaviour
             }
         }
 
-        var step = 0;
         List<Block> blocks;
-        while (step < minStep && mainBlockVariants.Count != 0)
+        while (mainBlockVariants.Count != 0)
         {
-            step = 0;
             blocks = new List<Block>();
 
-            var mainBlock = mainBlockVariants[UnityEngine.Random.Range(0, mainBlockVariants.Count)];
+            mainBlock = mainBlockVariants[UnityEngine.Random.Range(0, mainBlockVariants.Count)];
             mainBlockVariants.Remove(mainBlock);
-            MainBlock = mainBlock;
 
             blocks.Add(mainBlock);
-            var mask = GetMask(blocks, levelWidth, levelHeight);
-
-            availableBlockVariants = cloneBlocks(allBlockVariants);
-            //availableBlockVariants = CreateCopy(allBlockVariants);
-            availableBlockVariants.Where(t => !CheckGoodBlock(mask, t)).ToList().ForEach(t => availableBlockVariants.Remove(t));
-            availableBlockVariants.Where(t => t.Y == mainBlock.Y && !t.IsVertical).ToList().ForEach(t => availableBlockVariants.Remove(t));
             blocks = GenerateLevelStep(0, minStep, levelWidth, levelHeight, blocks);
             if (blocks != null)
             {
-                Debug.Log(f_GenerateLevelStep);
-                Debug.Log(f_GetLevelDecisionStep);
+                Debug.Log(function_GenerateLevelStep_CallNumber);
+                Debug.Log(function_GetLevelDecisionStep_CallNumber);
                 return blocks;
             }
         }
+        Debug.Log(function_GenerateLevelStep_CallNumber);
+        Debug.Log(function_GetLevelDecisionStep_CallNumber);
         return null;
     }
 
     public static List<Block> GenerateLevelStep(int step, int minStep, int levelWidth, int levelHeight, List<Block> blocks)
     {
-        f_GenerateLevelStep++;
+        function_GenerateLevelStep_CallNumber++;
 
-        var mask = GetMask(blocks, levelWidth, levelHeight);
+        var levelMask = getLevelMask(blocks, levelWidth, levelHeight);
 
         List<Block> removedBlocks = new List<Block>();
-        availableBlockVariants.Where(t => !CheckGoodBlock(mask, t)).ToList().ForEach(t => 
+        availableBlockVariants.Where(t => !checkGoodBlock(levelMask, t)).ToList().ForEach(t => 
         {
             removedBlocks.Add(t);
             availableBlockVariants.Remove(t);
         });
 
-        while (step < minStep && availableBlockVariants.Count != 0)
+        while (availableBlockVariants.Count != 0)
         {
             var randomBlock = availableBlockVariants[UnityEngine.Random.Range(0, availableBlockVariants.Count)];
             blocks.Add(randomBlock);
 
-            StepInfo.Clear();
+            stepInfo.Clear();
             var newStep = GetLevelDecisionStep(levelWidth, levelHeight, blocks, 0, -1);
             if (newStep >= minStep && newStep < Infinity)
             {
-                availableBlockVariants.AddRange(removedBlocks);
                 return blocks;
             }
             if (newStep > step && newStep < Infinity)
             {
-                step = newStep;
-                if (GenerateLevelStep(step, minStep, levelWidth, levelHeight, blocks) != null)
+                if (GenerateLevelStep(newStep, minStep, levelWidth, levelHeight, blocks) != null)
                 {
-                    availableBlockVariants.AddRange(removedBlocks);
                     return blocks;
                 }
             }
@@ -395,90 +385,98 @@ public class LevelGenerator : MonoBehaviour
     }
 
 
-    public static int GetLevelDecisionStep(int levelWidth, int levelHeight, List<Block> blocks, int step, int lastBlock)
+    public static int GetLevelDecisionStep(int levelWidth, int levelHeight, List<Block> blocks, int step, int prevStepBlockNumber)
     {
-        f_GetLevelDecisionStep++;
+        function_GetLevelDecisionStep_CallNumber++;
 
-        var levelMask = GetMask(blocks, levelWidth, levelHeight);
+        var levelMask = getLevelMask(blocks, levelWidth, levelHeight);
 
-        if (CheckGoodLevel(levelMask))
+        if (checkGoodLevel(levelMask))
             return step;
 
-        if (IsCheckedStep(blocks, step))
+        if (step == searchDepth)
             return Infinity;
 
-        if (step == SearchDepth)
-            return Infinity;
-
-        int minDecision = Infinity;
         step++;
+        int minDecision = Infinity;
         int blockNumber = 0;
         foreach (var block in blocks)
         {
-            if (blockNumber != lastBlock)
+            if (blockNumber != prevStepBlockNumber)
             {
                 if (!block.IsVertical)
                 {
-                    var x = blocks[blockNumber].X;
+                    var x = block.X;
                     for (int i = block.X - 1; i >= 0; i--)
                     {
                         if (levelMask[i, block.Y] == false)
                         {
-                            blocks[blockNumber].X = i;
-                            int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
-
-                            if (newDecision < minDecision)
-                                minDecision = newDecision;
+                            block.X = i;
+                            if (checkIsNewStep(blocks, step))
+                            {
+                                int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
+                                if (newDecision < minDecision)
+                                    minDecision = newDecision;
+                            }
                         }
                         else
                             break;
                     }
-                    blocks[blockNumber].X = x;
+                    block.X = x;
                     var last = levelWidth - (block.IsBig ? 2 : 1);
                     for (int i = block.X + 1; i < last; i++)
                     {
                         if (levelMask[i + (block.IsBig ? 2 : 1), block.Y] == false)
                         {
-                            blocks[blockNumber].X = i;
-                            int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
-                            if (newDecision < minDecision)
-                                minDecision = newDecision;
+                            block.X = i;
+                            if (checkIsNewStep(blocks, step))
+                            {
+                                int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
+                                if (newDecision < minDecision)
+                                    minDecision = newDecision;
+                            }
                         }
                         else
                             break;
                     }
-                    blocks[blockNumber].X = x;
+                    block.X = x;
                 }
                 else
                 {
-                    var y = blocks[blockNumber].Y;
+                    var y = block.Y;
                     for (int i = block.Y - 1; i >= 0; i--)
                     {
                         if (levelMask[block.X, i] == false)
                         {
-                            blocks[blockNumber].Y = i;
-                            int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
-                            if (newDecision < minDecision)
-                                minDecision = newDecision;
+                            block.Y = i;
+                            if (checkIsNewStep(blocks, step))
+                            {
+                                int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
+                                if (newDecision < minDecision)
+                                    minDecision = newDecision;
+                            }
                         }
                         else
                             break;
                     }
-                    blocks[blockNumber].Y = y;
+                    block.Y = y;
                     var last = levelHeight - (block.IsBig ? 2 : 1);
                     for (int i = block.Y + 1; i < last; i++)
                     {
                         if (levelMask[block.X, i + (block.IsBig ? 2 : 1)] == false)
                         {
-                            blocks[blockNumber].Y = i;
-                            int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
-                            if (newDecision < minDecision)
-                                minDecision = newDecision;
+                            block.Y = i;
+                            if (checkIsNewStep(blocks, step))
+                            {
+                                int newDecision = GetLevelDecisionStep(levelWidth, levelHeight, blocks, step, blockNumber);
+                                if (newDecision < minDecision)
+                                    minDecision = newDecision;
+                            }
                         }
                         else
                             break;
                     }
-                    blocks[blockNumber].Y = y;
+                    block.Y = y;
                 }
             }
             blockNumber++;
@@ -486,16 +484,15 @@ public class LevelGenerator : MonoBehaviour
         return minDecision;
     }
 
-
-    private static bool IsCheckedStep(List<Block> blocks, int step)
+    private static bool checkIsNewStep(List<Block> blocks, int step)
     {
-        for (int k = StepInfo.Count - 1; k > -1; k--)
+        for (int k = stepInfo.Count - 1; k > -1; k--)
         {
             bool needBreak = false;
             for (int i = 0; i < blocks.Count; i++)
             {
-                if((blocks[i].IsVertical && StepInfo[k].BlockPositions[i] != blocks[i].Y) ||
-                    (!blocks[i].IsVertical && StepInfo[k].BlockPositions[i] != blocks[i].X))
+                if((blocks[i].IsVertical && stepInfo[k].BlockPositions[i] != blocks[i].Y) ||
+                    (!blocks[i].IsVertical && stepInfo[k].BlockPositions[i] != blocks[i].X))
                 { 
                     needBreak = true;
                     break;
@@ -504,11 +501,11 @@ public class LevelGenerator : MonoBehaviour
             if (needBreak)
                 continue;
 
-            if (StepInfo[k].Step <= step)
-                return true;
+            if (stepInfo[k].Step <= step)
+                return false;
             else
-                StepInfo[k].Step = step;
-            return false;                
+                stepInfo[k].Step = step;
+            return true;                
         }
 
         byte[] blockPositions = new byte[blocks.Count*2];
@@ -519,11 +516,11 @@ public class LevelGenerator : MonoBehaviour
             else
                 blockPositions[i] = (byte)blocks[i].X;
         }
-        StepInfo.Add(new StepInfo() { BlockPositions = blockPositions, Step = step });
-        return false;
+        stepInfo.Add(new StepInfo() { BlockPositions = blockPositions, Step = step });
+        return true;
     }
 
-    public static bool[,] GetMask(List<Block> blocks, int levelWidth, int levelHeight)
+    private static bool[,] getLevelMask(List<Block> blocks, int levelWidth, int levelHeight)
     {
         bool[,] levelMask = new bool[levelWidth, levelHeight];
         foreach (var block in blocks)
@@ -545,20 +542,7 @@ public class LevelGenerator : MonoBehaviour
         return levelMask;
     }
 
-    public static int[,] CloneMask(int[,] levelMask)
-    {
-        int[,] a = new int[5, 5];
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                a[i, j] = levelMask[i, j];
-            }
-        }
-        return a;
-    }
-
-    public static void ShowMask(int[,] levelMask)
+    private static void showMask(int[,] levelMask)
     {
         for (int i = 0; i < 5; i++)
         {
@@ -572,17 +556,17 @@ public class LevelGenerator : MonoBehaviour
         Debug.Log("------------------");
     }
 
-    public static bool CheckGoodLevel(bool[,] levelMask)
+    private static bool checkGoodLevel(bool[,] levelMask)
     {
-        for (int i = MainBlock.X + 2; i < levelMask.GetLength(0); i++)
+        for (int i = mainBlock.X + 2; i < levelMask.GetLength(0); i++)
         {
-            if (levelMask[i, MainBlock.Y] != false)
+            if (levelMask[i, mainBlock.Y] != false)
                 return false;
         }
         return true;
     }
 
-    public static bool CheckGoodBlock(bool[,] levelMask, Block block)
+    private static bool checkGoodBlock(bool[,] levelMask, Block block)
     {
         if (block.IsVertical)
         {
